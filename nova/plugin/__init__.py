@@ -1,6 +1,5 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
-# Copyright 2011 OpenStack LLC.
+# Copyright 2010 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -15,20 +14,5 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nova.api.openstack import extensions as base_extensions
-from nova import flags
-from nova import log as logging
-
-
-LOG = logging.getLogger(__name__)
-FLAGS = flags.FLAGS
-
-
-class ExtensionManager(base_extensions.ExtensionManager):
-    def __init__(self):
-        LOG.audit(_('Initializing extension manager.'))
-
-        self.cls_list = FLAGS.osapi_volume_extension
-        self.extensions = {}
-        self.plugins = []
-        self._load_extensions()
+import gettext
+import logging

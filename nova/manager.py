@@ -56,6 +56,7 @@ This module provides Manager, a base class for managers.
 from nova.db import base
 from nova import flags
 from nova import log as logging
+from nova.plugin import pluginmanager
 from nova.scheduler import api
 from nova import version
 
@@ -134,6 +135,7 @@ class Manager(base.Base):
         if not host:
             host = FLAGS.host
         self.host = host
+        self.load_plugins()
         super(Manager, self).__init__(db_driver)
 
     def periodic_tasks(self, context, raise_on_error=False):
@@ -158,6 +160,9 @@ class Manager(base.Base):
                     raise
                 LOG.exception(_("Error during %(full_task_name)s: %(e)s"),
                               locals())
+
+    def load_plugins(self):
+        self.plugins = pluginmanager.PluginManager().load_plugins(self.__class__)
 
     def init_host(self):
         """Handle initialization if this is a standalone service.

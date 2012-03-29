@@ -17,6 +17,7 @@
 #    under the License.
 
 import os
+import types
 
 import webob.dec
 import webob.exc
@@ -246,8 +247,11 @@ class ExtensionManager(object):
 
         LOG.debug(_("Loading extension %s"), ext_factory)
 
-        # Load the factory
-        factory = importutils.import_class(ext_factory)
+        if isinstance(ext_factory, types.StringType):
+            # Load the factory
+            factory = importutils.import_class(ext_factory)
+        else:
+            factory = ext_factory
 
         # Call it
         LOG.debug(_("Calling extension factory %s"), ext_factory)

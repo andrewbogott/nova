@@ -18,6 +18,7 @@
 from nova.api.openstack import extensions as base_extensions
 from nova import flags
 from nova import log as logging
+from nova.plugin import pluginmanager
 
 
 LOG = logging.getLogger(__name__)
@@ -29,5 +30,6 @@ class ExtensionManager(base_extensions.ExtensionManager):
         LOG.audit(_('Initializing extension manager.'))
 
         self.cls_list = FLAGS.osapi_compute_extension
+        self.cls_list.append(pluginmanager.plugin_extension_factory)
         self.extensions = {}
         self._load_extensions()

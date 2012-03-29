@@ -36,6 +36,7 @@ terminating it.
 
 import contextlib
 import functools
+import imp
 import os
 import socket
 import sys
@@ -66,6 +67,7 @@ from nova.openstack.common import cfg
 from nova.openstack.common import excutils
 from nova.openstack.common import importutils
 from nova.openstack.common import jsonutils
+from nova.plugin import pluginmanager
 from nova import rpc
 from nova import utils
 from nova.virt import driver
