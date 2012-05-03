@@ -22,6 +22,14 @@ from nova.notifier import list_notifier
 from nova import test
 
 
+class SimpleNotifier(object):
+    def __init__(self):
+        self.notified = False
+
+    def notify(self, *args):
+        self.notified = True
+
+
 class NotifierListTestCase(test.TestCase):
     """Test case for notifications"""
 
@@ -81,4 +89,38 @@ class NotifierListTestCase(test.TestCase):
         nova.notifier.api.notify('contextarg', 'publisher_id',
                 'event_type', nova.notifier.api.WARN, dict(a=3))
         self.assertEqual(self.exception_count, 2)
+        self.assertEqual(self.notify_count, 1)
+
+    def test_adding_and_removing_notifier_object(self):
+        self.notifier_object = SimpleNotifier()
+        self.flags(notification_driver='nova.notifier.list_notifier',
+                   list_notifier_drivers=['nova.notifier.no_op_notifier'])
+
+        list_notifier.add_driver(self.notifier_object)
+        nova.notifier.api.notify(None, 'publisher_id', 'event_type',
+                nova.notifier.api.WARN, dict(a=3))
+        self.assertEqual(self.notify_count, 1)
+        self.assertTrue(self.notifier_object.notified)
+
+        self.notifier_object.notified = False
+        list_notifier.remove_driver(self.notifier_object)
+
+        nova.notifier.api.notify(None, 'publisher_id', 'event_type',
+                nova.notifier.api.WARN, dict(a=3))
+        self.assertEqual(self.notify_count, 2)
+        self.assertFalse(self.notifier_object.notified)
+
+    def test_adding_and_removing_notifier_module(self):
+        self.flags(notification_driver='nova.notifier.list_notifier',
+                   list_notifier_drivers=[])
+
+        list_notifier.add_driver('nova.notifier.no_op_notifier')
+        nova.notifier.api.notify(None, 'publisher_id', 'event_type',
+                nova.notifier.api.WARN, dict(a=3))
+        self.assertEqual(self.notify_count, 1)
+
+        list_notifier.remove_driver('nova.notifier.no_op_notifier')
+
+        nova.notifier.api.notify(None, 'publisher_id', 'event_type',
+                nova.notifier.api.WARN, dict(a=3))
         self.assertEqual(self.notify_count, 1)

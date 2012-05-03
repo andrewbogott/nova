@@ -44,7 +44,7 @@ class ImportFailureNotifier(object):
 def _get_drivers():
     """Instantiates and returns drivers based on the flag values."""
     global drivers
-    if not drivers:
+    if drivers is None:
         drivers = []
         for notification_driver in FLAGS.list_notifier_drivers:
             try:
@@ -52,6 +52,53 @@ def _get_drivers():
             except ImportError as e:
                 drivers.append(ImportFailureNotifier(e))
     return drivers
+
+
+def add_driver(notification_driver):
+    """Add a notification driver at runtime."""
+    # Make sure the driver list is initialized.
+    _get_drivers()
+    if isinstance(notification_driver, basestring):
+        # Load and add
+        try:
+            drivers.append(importutils.import_module(notification_driver))
+        except ImportError as e:
+            drivers.append(ImportFailureNotifier(e))
+    else:
+        # Driver is already loaded; just add the object.
+        drivers.append(notification_driver)
+
+
+def _object_name(obj):
+    name = []
+    if hasattr(obj, '__module__'):
+        name.append(obj.__module__)
+    if hasattr(obj, '__name__'):
+        name.append(obj.__name__)
+    else:
+        name.append(obj.__class__.__name__)
+    return '.'.join(name)
+
+
+def remove_driver(notification_driver):
+    """Remove a notification driver at runtime."""
+    # Make sure the driver list is initialized.
+    _get_drivers()
+    removed = False
+    if notification_driver in drivers:
+        # We're removing an object.  Easy.
+        drivers.remove(notification_driver)
+        removed = True
+    else:
+        # We're removing a driver by name.  Search for it.
+        for driver in drivers:
+            if _object_name(driver) == notification_driver:
+                drivers.remove(driver)
+                removed = True
+
+    if not removed:
+        raise ValueError("Cannot remove; %s is not in list" %
+                         notification_driver)
 
 
 def notify(context, message):
