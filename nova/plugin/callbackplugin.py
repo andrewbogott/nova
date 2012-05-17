@@ -64,8 +64,7 @@ class CallbackPlugin(plugin.Plugin):
     def __init__(self, api_extension_descriptors=[],
                  notifiers=[]):
         self._callback_notifier = _CallbackNotifier()
-        super(CallbackPlugin, self).__init__(api_extension_descriptors,
-                                             notifiers)
+        super(CallbackPlugin, self).__init__()
 
     def add_callback(self, callback, event_type, user_data=None):
         """Add callback for a given notification.

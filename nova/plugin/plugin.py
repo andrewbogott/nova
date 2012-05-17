@@ -30,10 +30,10 @@ class Plugin(object):
 
     A plugin interacts with nova in the following ways:
 
-    - An optional set of notifiers, managed via __init__(),
+    - An optional set of notifiers, managed via
       add_notifier() and remove_notifier()
 
-    - A set of api extensions, set at __init__ time.
+    - A set of api extensions, managed via add_api_extension_descriptor()
 
     - Direct calls to nova functions.
 
@@ -45,10 +45,9 @@ class Plugin(object):
     This is the reference implementation.
     """
 
-    def __init__(self, api_extension_descriptors=[],
-                 notifiers=[]):
-        self._notifiers = notifiers
-        self._api_extension_descriptors = api_extension_descriptors
+    def __init__(self):
+        self._notifiers = []
+        self._api_extension_descriptors = []
 
         # Make sure we're using the list_notifier.
         if not hasattr(FLAGS, "list_notifier_drivers"):
@@ -58,11 +57,7 @@ class Plugin(object):
         if old_notifier and old_notifier != 'nova.notifier.list_notifier':
             list_notifier.add_driver(old_notifier)
 
-        # Hook up our current list of notifiers.
-        for notifier in self._notifiers:
-            list_notifier.add_driver(notifier)
-
-    def api_extension_descriptors(self):
+    def get_api_extension_descriptors(self):
         """Return a list of API extension descriptors.
 
            Called by the Nova API during its load sequence.
@@ -72,6 +67,16 @@ class Plugin(object):
     def on_service_load(self, service_name):
         """Called when the Nova API service loads this plugin."""
         pass
+
+    def add_api_extension_descriptor(self, descriptor):
+        """Add an extension descriptor.  This will be loaded 
+           by nova-api.
+
+           Note that once the api service has loaded, the
+           API extension set is more-or-less fixed, so
+           this should mainly be called by subclass constructors.
+        """
+        self._api_extension_descriptors.append(descriptor)
 
     def add_notifier(self, notifier):
         """Add a notifier to the notification driver chain.

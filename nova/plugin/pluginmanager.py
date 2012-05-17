@@ -54,7 +54,7 @@ class PluginManager(object):
                 pluginclass = entrypoint.load()
                 plugin = pluginclass()
                 pluginlist.append(plugin)
-            except (ImportError, ValueError, AttributeError, TypeError), exc:
+            except Exception, exc:
                 LOG.error(_("Failed to load plugin %(plug)s: %(exc)s") %
                           {'plug': entrypoint, 'exc': exc})
 
@@ -90,6 +90,6 @@ def plugin_extension_factory(ext_mgr):
     plugins = PluginManager().load_plugins(ext_mgr)
 
     for plugin in plugins:
-        descriptors = plugin.api_extension_descriptors()
+        descriptors = plugin.get_api_extension_descriptors()
         for descriptor in descriptors:
             ext_mgr.load_extension(descriptor)

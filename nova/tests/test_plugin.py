@@ -70,7 +70,8 @@ class NotifyTestCase(test.TestCase):
 
     def test_init(self):
         notifier = SimpleNotifier()
-        testplugin = plugin.Plugin([], [notifier])
+        testplugin = plugin.Plugin()
+        testplugin.add_notifier(notifier)
 
         notifier_api.notify('contextarg', 'publisher_id', 'event_type',
                             nova.notifier.api.WARN, dict(a=3))
@@ -83,7 +84,8 @@ class NotifyTestCase(test.TestCase):
         notifier2 = SimpleNotifier()
         notifier3 = SimpleNotifier()
 
-        testplugin = plugin.Plugin([], [notifier1])
+        testplugin = plugin.Plugin()
+        testplugin.add_notifier(notifier1)
         testplugin.add_notifier(notifier2)
 
         notifier_api.notify('contextarg', 'publisher_id', 'event_type',
@@ -150,7 +152,8 @@ class StubControllerExtension(extensions.ExtensionDescriptor):
 class TestPluginClass(plugin.Plugin):
 
     def __init__(self):
-        super(TestPluginClass, self).__init__([StubControllerExtension])
+        super(TestPluginClass, self).__init__()
+        self.add_api_extension_descriptor(StubControllerExtension)
 
 
 class APITestCase(test.TestCase):

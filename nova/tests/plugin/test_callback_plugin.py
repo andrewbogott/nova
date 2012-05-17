@@ -35,7 +35,8 @@ class CallbackTestCase(test.TestCase):
 
     def test_init(self):
         notifier = SimpleNotifier()
-        testplugin = callbackplugin.CallbackPlugin([], [notifier])
+        testplugin = callbackplugin.CallbackPlugin()
+        testplugin.add_notifier(notifier)
 
         notifier_api.notify('contextarg', 'publisher_id', 'event_type',
                             nova.notifier.api.WARN, dict(a=3))
