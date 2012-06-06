@@ -471,9 +471,6 @@ global_opts = [
                default='noauth',
                help='The strategy to use for auth. Supports noauth, keystone, '
                     'and deprecated.'),
-    cfg.ListOpt('plugins',
-                default=[],
-                help='Nova plugins.'),
 ]
 
 FLAGS.register_opts(global_opts)

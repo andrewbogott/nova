@@ -58,22 +58,6 @@ class PluginManager(object):
                 LOG.error(_("Failed to load plugin %(plug)s: %(exc)s") %
                           {'plug': entrypoint, 'exc': exc})
 
-        for pluginopt in FLAGS.plugins:
-            try:
-                # plugin is identified as /path/to/module.classname
-                path, _sep, cls = pluginopt.rpartition(".")
-                if not path.endswith(".py"):
-                    path += ".py"
-                module = os.path.splitext(os.path.basename(path))[0]
-                m = imp.load_source(module, path)
-                pluginclass = getattr(m, cls)
-                plugin = pluginclass()
-                pluginlist.append(plugin)
-
-            except (ImportError, ValueError, AttributeError), exc:
-                LOG.error(_("Failed to load plugin %(plug)s: %(exc)s") %
-                          {'plug': pluginopt, 'exc': exc})
-
         self._pluginlist = pluginlist
 
     def load_plugins(self, service):
