@@ -29,6 +29,7 @@ from nova import exception
 from nova import flags
 from nova import log as logging
 from nova.openstack.common import importutils
+from nova.plugin import pluginmanager
 import nova.policy
 
 
@@ -136,6 +137,7 @@ class ExtensionsResource(wsgi.Resource):
 
     def __init__(self, extension_manager):
         self.extension_manager = extension_manager
+        self.PluginManager = pluginmanager.PluginManager(self.__class__)
         super(ExtensionsResource, self).__init__(None)
 
     def _translate(self, ext):
@@ -245,6 +247,7 @@ class ExtensionManager(object):
         expected to call the register() method at least once.
         """
 
+        print(_("Loading extension %s"), ext_factory)
         LOG.debug(_("Loading extension %s"), ext_factory)
 
         if isinstance(ext_factory, types.StringType):

@@ -69,7 +69,7 @@ class Plugin(object):
         pass
 
     def add_api_extension_descriptor(self, descriptor):
-        """Add an extension descriptor.  This will be loaded 
+        """Add an extension descriptor.  This will be loaded
            by nova-api.
 
            Note that once the api service has loaded, the

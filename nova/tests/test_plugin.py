@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import pkg_resources
+
 import nova
 from nova.api.openstack.compute import contrib
 from nova.api.openstack import extensions
@@ -37,17 +39,11 @@ class SimpleNotifier(object):
 
 class ManagerTestCase(test.TestCase):
     def tearDown(self):
-        pluginmanager.PluginManager.purge()
         super(ManagerTestCase, self).tearDown()
 
-    def test_singleness(self):
-        manager1 = pluginmanager.PluginManager()
-        manager2 = pluginmanager.PluginManager()
-        self.assertEqual(manager1, manager2)
-
-        pluginmanager.PluginManager.purge()
-        manager3 = pluginmanager.PluginManager()
-        self.assertNotEqual(manager3, manager2)
+    def test_constructs(self):
+        manager1 = pluginmanager.PluginManager("test")
+        self.assertNotEqual(manager1, False)
 
 
 class NotifyTestCase(test.TestCase):
@@ -65,7 +61,6 @@ class NotifyTestCase(test.TestCase):
                 mock_notify)
 
     def tearDown(self):
-        pluginmanager.PluginManager.purge()
         super(NotifyTestCase, self).tearDown()
 
     def test_init(self):
@@ -142,6 +137,7 @@ class StubControllerExtension(extensions.ExtensionDescriptor):
     alias = 'stubby'
 
     def get_resources(self):
+        print "Andrew: get_resources"
         resources = []
         res = extensions.ResourceExtension('testme',
                                            StubController())
@@ -156,22 +152,32 @@ class TestPluginClass(plugin.Plugin):
         self.add_api_extension_descriptor(StubControllerExtension)
 
 
+class MockEntrypoint(pkg_resources.EntryPoint):
+    def load(self):
+        return TestPluginClass
+
+
 class APITestCase(test.TestCase):
     """Test case for the plugin api extension interface"""
     def tearDown(self):
-        pluginmanager.PluginManager.purge()
         super(APITestCase, self).tearDown()
 
     def test_add_extension(self):
+        def mock_load(_s):
+            return TestPluginClass()
+
+        def mock_iter_entry_points(_t):
+            return [MockEntrypoint("fake", "fake", "fake")]
+
+        self.stubs.Set(pkg_resources, 'iter_entry_points',
+                mock_iter_entry_points)
+
         stubLoaded = False
-        pluginpath = "%s.%s" % (__file__, 'TestPluginClass')
-        self.flags(plugins=[pluginpath])
 
         # Marking out the default extension paths makes this test MUCH faster.
         self.flags(osapi_compute_extension=[])
         self.flags(osapi_volume_extension=[])
 
-        pluginmanager.PluginManager.purge()
         found = False
         mgr = computeextensions.ExtensionManager()
         for res in mgr.get_resources():
